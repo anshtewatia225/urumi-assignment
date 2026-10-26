@@ -390,6 +390,3 @@ The mandatory core is implemented and verified end to end on local kind. Deliver
 | Threat model note | `docs/threat-model.md` |
 | Bonus and stand-out items, and where to find them | "Bonus and stand-out items" above |
 
-The demo video walks the definition of done with two users and covers the required demo
-sections (Kubernetes, MCP internals, security posture, chat agent, local-to-VPS story), and is
-submitted with this repository via <https://forms.gle/nftwgyNeenSDmiRb6>.
