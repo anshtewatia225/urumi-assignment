@@ -1,0 +1,69 @@
+﻿# Production-like values for a VPS running k3s (or any conformant cluster).
+#
+# Usage: helm upgrade --install urumi charts/platform -n platform \
+#          --create-namespace -f values-prod.yaml \
+#          --set secrets.llm.apiKey="$LLM_API_KEY"
+#
+# Differences from local are configuration only:
+#   - real DNS names instead of hosts-file entries
+#   - TLS terminates at Ingress (cert-manager or pre-created Secrets)
+#   - storageClassName of the cluster (k3s default is local-path)
+#   - images pulled from a registry instead of kind-loaded local tags
+#   - secure cookies over HTTPS
+
+global:
+  storeNamespace: store
+  platformNamespace: platform
+  domain:
+    store: store.example.com
+    app: app.example.com
+
+secrets:
+  llm:
+    apiKey: ""
+  admin:
+    email: admin@example.com
+    name: Urumi Admin
+    password: ""
+
+ingress:
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    storeSecretName: store-tls
+    appSecretName: app-tls
+
+postgres:
+  storage:
+    storageClassName: local-path
+
+woocommerce:
+  wordpress:
+    storage:
+      storageClassName: local-path
+  mariadb:
+    storage:
+      storageClassName: local-path
+
+gateway:
+  cookieSecure: true
+  allowPrivateUpstreams: true
+  image: ghcr.io/CHANGE_ME/urumi-gateway:0.1.0
+  dashboardImage: ghcr.io/CHANGE_ME/urumi-dashboard:0.1.0
+
+wc-mcp:
+  image: ghcr.io/CHANGE_ME/urumi-wc-mcp-server:0.1.0
+  imagePullPolicy: Always
+
+mock-mcp:
+  image: ghcr.io/CHANGE_ME/urumi-mock-mcp:0.1.0
+  imagePullPolicy: Always
+
+analytics-mcp:
+  image: ghcr.io/CHANGE_ME/urumi-mock-mcp:0.1.0
+  imagePullPolicy: Always

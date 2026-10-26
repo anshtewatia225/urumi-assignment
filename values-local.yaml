@@ -1,0 +1,45 @@
+﻿# Local development values (kind / k3d / minikube).
+# Usage: helm upgrade --install urumi charts/platform -n platform \
+#          --create-namespace -f values-local.yaml
+
+global:
+  storeNamespace: store
+  platformNamespace: platform
+  domain:
+    store: store.local
+    app: app.local
+
+secrets:
+  # Do NOT put real secrets in this file: it is committed to git.
+  # The install scripts load the key from the environment or a gitignored .env:
+  #   $env:LLM_API_KEY="sk-or-..."        (OPENROUTER_API_KEY also works)
+  #   or add LLM_API_KEY=sk-or-... to .env
+  # You can also pass it transiently: --set secrets.llm.apiKey=...
+  # Leaving it empty makes the install preserve any key already in the Kubernetes Secret.
+  llm:
+    apiKey: ""
+  admin:
+    email: admin@urumi.local
+    name: Urumi Admin
+    password: ""
+
+ingress:
+  className: nginx
+  tls:
+    enabled: false
+
+postgres:
+  storage:
+    storageClassName: ""
+
+woocommerce:
+  wordpress:
+    storage:
+      storageClassName: ""
+  mariadb:
+    storage:
+      storageClassName: ""
+
+gateway:
+  cookieSecure: false
+  allowPrivateUpstreams: true

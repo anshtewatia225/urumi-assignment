@@ -1,0 +1,21 @@
+dependencies:
+- name: postgres
+  repository: file://../postgres
+  version: 0.1.0
+- name: woocommerce
+  repository: file://../woocommerce
+  version: 0.1.0
+- name: wc-mcp
+  repository: file://../wc-mcp
+  version: 0.1.0
+- name: mock-mcp
+  repository: file://../mock-mcp
+  version: 0.1.0
+- name: mock-mcp
+  repository: file://../mock-mcp
+  version: 0.1.0
+- name: gateway
+  repository: file://../gateway
+  version: 0.1.0
+digest: sha256:5599bc5eda5d0e6a44b3f1a5c6f203c70aae657f7aeb596c8ed2a43c10ac009e
+generated: "2026-10-23T11:35:24.180713+05:30"

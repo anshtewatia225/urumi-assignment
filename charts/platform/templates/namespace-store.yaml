@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.global.storeNamespace }}
+  labels:
+    app.kubernetes.io/part-of: urumi
+    urumi.io/role: store

@@ -1,0 +1,71 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: storefront
+  namespace: {{ .Values.global.storeNamespace }}
+  labels:
+    app.kubernetes.io/part-of: urumi
+  annotations:
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+{{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.global.domain.store | quote }}
+      secretName: {{ required "ingress.tls.storeSecretName is required when TLS is enabled" .Values.ingress.tls.storeSecretName }}
+{{- end }}
+  rules:
+    - host: {{ .Values.global.domain.store | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wordpress
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  namespace: {{ .Values.global.platformNamespace }}
+  labels:
+    app.kubernetes.io/part-of: urumi
+  annotations:
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+{{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.global.domain.app | quote }}
+      secretName: {{ required "ingress.tls.appSecretName is required when TLS is enabled" .Values.ingress.tls.appSecretName }}
+{{- end }}
+  rules:
+    - host: {{ .Values.global.domain.app | quote }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  name: http
+          - path: /mcp
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  name: http

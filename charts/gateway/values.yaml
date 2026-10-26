@@ -1,0 +1,56 @@
+image: urumi/gateway:local
+dashboardImage: urumi/dashboard:local
+imagePullPolicy: IfNotPresent
+
+appSecret: gateway-secrets
+databaseSecret: gateway-database
+
+llm:
+  baseUrl: https://openrouter.ai/api/v1
+  model: nvidia/nemotron-3-ultra-550b-a55b:free
+  maxIterations: 6
+
+sessionTtlHours: 12
+cookieSecure: false
+allowPrivateUpstreams: true
+
+timeouts:
+  listMs: 5000
+  callMs: 30000
+  cacheTtlMs: 15000
+
+seed:
+  wcMcp:
+    enabled: true
+    name: WooCommerce
+    slug: woocommerce
+  mockMcp:
+    enabled: true
+    name: Fulfillment
+    slug: fulfillment
+  analyticsMcp:
+    enabled: true
+    name: Analytics
+    slug: analytics
+  publicServers:
+    - name: DeepWiki
+      slug: deepwiki
+      url: https://mcp.deepwiki.com/mcp
+      enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+dashboard:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 192Mi

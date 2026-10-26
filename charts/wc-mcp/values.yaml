@@ -1,0 +1,13 @@
+image: urumi/wc-mcp-server:local
+imagePullPolicy: IfNotPresent
+credentialsSecret: store-credentials
+woocommerceUrl: http://wordpress:80
+timeoutMs: 15000
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi

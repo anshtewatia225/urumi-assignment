@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wc-mcp
+  namespace: {{ .Values.global.storeNamespace }}
+  labels:
+    app.kubernetes.io/name: wc-mcp
+    app.kubernetes.io/part-of: urumi
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: wc-mcp
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

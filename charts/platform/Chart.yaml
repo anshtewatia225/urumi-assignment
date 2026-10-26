@@ -1,0 +1,32 @@
+apiVersion: v2
+name: platform
+description: Urumi WooCommerce hosting with a team MCP gateway
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: postgres
+    version: 0.1.0
+    repository: file://../postgres
+    condition: postgres.enabled
+  - name: woocommerce
+    version: 0.1.0
+    repository: file://../woocommerce
+    condition: woocommerce.enabled
+  - name: wc-mcp
+    version: 0.1.0
+    repository: file://../wc-mcp
+    condition: wc-mcp.enabled
+  - name: mock-mcp
+    version: 0.1.0
+    repository: file://../mock-mcp
+    condition: mock-mcp.enabled
+  - name: mock-mcp
+    alias: analytics-mcp
+    version: 0.1.0
+    repository: file://../mock-mcp
+    condition: analytics-mcp.enabled
+  - name: gateway
+    version: 0.1.0
+    repository: file://../gateway
+    condition: gateway.enabled

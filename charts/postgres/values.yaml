@@ -1,0 +1,14 @@
+image: postgres:16-alpine
+authSecret: postgres-credentials
+
+storage:
+  size: 5Gi
+  storageClassName: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

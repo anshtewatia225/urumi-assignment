@@ -1,0 +1,12 @@
+component: mock-mcp
+profile: fulfillment
+image: urumi/mock-mcp:local
+imagePullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 192Mi

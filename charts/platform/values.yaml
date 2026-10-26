@@ -1,0 +1,183 @@
+global:
+  storeNamespace: store
+  platformNamespace: platform
+  domain:
+    store: store.local
+    app: app.local
+
+secrets:
+  llm:
+    apiKey: ""
+  admin:
+    email: admin@urumi.local
+    name: Urumi Admin
+    password: ""
+  woocommerce:
+    adminUser: admin
+    adminEmail: admin@store.local
+    adminPassword: ""
+    database: urumi_store
+    databaseUser: urumi
+
+ingress:
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  tls:
+    enabled: false
+    storeSecretName: ""
+    appSecretName: ""
+
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  authSecret: postgres-credentials
+  authUser: urumi
+  authDatabase: urumi_gateway
+  storage:
+    size: 5Gi
+    storageClassName: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+woocommerce:
+  enabled: true
+  credentialsSecret: store-credentials
+  wordpress:
+    image: wordpress:7.1.3-php8.3-apache
+    title: Urumi Store
+    storage:
+      size: 10Gi
+      storageClassName: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 768Mi
+  mariadb:
+    image: mariadb:11.4
+    storage:
+      size: 10Gi
+      storageClassName: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 768Mi
+  bootstrap:
+    enabled: true
+    image: wordpress:cli-php8.3
+    woocommerceVersion: ""
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+wc-mcp:
+  enabled: true
+  image: urumi/wc-mcp-server:local
+  imagePullPolicy: IfNotPresent
+  credentialsSecret: store-credentials
+  woocommerceUrl: http://wordpress:80
+  timeoutMs: 15000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+mock-mcp:
+  enabled: true
+  component: mock-mcp
+  profile: fulfillment
+  image: urumi/mock-mcp:local
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 192Mi
+
+analytics-mcp:
+  enabled: true
+  component: analytics-mcp
+  profile: analytics
+  image: urumi/mock-mcp:local
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 192Mi
+
+gateway:
+  enabled: true
+  image: urumi/gateway:local
+  dashboardImage: urumi/dashboard:local
+  imagePullPolicy: IfNotPresent
+  appSecret: gateway-secrets
+  databaseSecret: gateway-database
+  llm:
+    baseUrl: https://openrouter.ai/api/v1
+    model: nvidia/nemotron-3-ultra-550b-a55b:free
+    maxIterations: 6
+  sessionTtlHours: 12
+  cookieSecure: false
+  allowPrivateUpstreams: true
+  timeouts:
+    listMs: 5000
+    callMs: 30000
+    cacheTtlMs: 15000
+  seed:
+    wcMcp:
+      enabled: true
+      name: WooCommerce
+      slug: woocommerce
+    mockMcp:
+      enabled: true
+      name: Fulfillment
+      slug: fulfillment
+    analyticsMcp:
+      enabled: true
+      name: Analytics
+      slug: analytics
+    publicServers:
+      - name: DeepWiki
+        slug: deepwiki
+        url: https://mcp.deepwiki.com/mcp
+        enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 192Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+  dashboard:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 192Mi

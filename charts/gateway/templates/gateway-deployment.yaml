@@ -1,0 +1,103 @@
+{{- $seeds := list -}}
+{{- if .Values.seed.wcMcp.enabled -}}
+{{- $seeds = append $seeds (dict "name" .Values.seed.wcMcp.name "slug" .Values.seed.wcMcp.slug "url" (printf "http://wc-mcp.%s.svc.cluster.local:8080/mcp" .Values.global.storeNamespace) "authType" "none" "enabled" true) -}}
+{{- end -}}
+{{- if .Values.seed.mockMcp.enabled -}}
+{{- $seeds = append $seeds (dict "name" .Values.seed.mockMcp.name "slug" .Values.seed.mockMcp.slug "url" (printf "http://mock-mcp.%s.svc.cluster.local:8080/mcp" .Values.global.platformNamespace) "authType" "none" "enabled" true) -}}
+{{- end -}}
+{{- if .Values.seed.analyticsMcp.enabled -}}
+{{- $seeds = append $seeds (dict "name" .Values.seed.analyticsMcp.name "slug" .Values.seed.analyticsMcp.slug "url" (printf "http://analytics-mcp.%s.svc.cluster.local:8080/mcp" .Values.global.platformNamespace) "authType" "none" "enabled" true) -}}
+{{- end -}}
+{{- range .Values.seed.publicServers -}}
+{{- $enabled := true -}}
+{{- if hasKey . "enabled" -}}{{- $enabled = .enabled -}}{{- end -}}
+{{- $seeds = append $seeds (dict "name" .name "slug" .slug "url" .url "authType" (default "none" .authType) "enabled" $enabled) -}}
+{{- end -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: {{ .Values.global.platformNamespace }}
+  labels:
+    app.kubernetes.io/name: gateway
+    app.kubernetes.io/part-of: urumi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gateway
+        app.kubernetes.io/part-of: urumi
+      annotations:
+        # envFrom/secretKeyRef values are read at container start. Bumping this on every
+        # release revision changes the pod template, forcing a rollout so rotated Secrets
+        # (LLM key, admin password, ...) take effect without a manual rollout restart.
+        urumi.io/config-revision: {{ .Release.Revision | quote }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: gateway
+          image: {{ .Values.image | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: {{ .Values.appSecret }}
+          env:
+            - name: PORT
+              value: "8080"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret }}
+                  key: DATABASE_URL
+            - name: LLM_BASE_URL
+              value: {{ .Values.llm.baseUrl | quote }}
+            - name: LLM_MODEL
+              value: {{ .Values.llm.model | quote }}
+            - name: LLM_MAX_ITERATIONS
+              value: {{ .Values.llm.maxIterations | quote }}
+            - name: SESSION_TTL_HOURS
+              value: {{ .Values.sessionTtlHours | quote }}
+            - name: COOKIE_SECURE
+              value: {{ .Values.cookieSecure | quote }}
+            - name: ALLOW_PRIVATE_UPSTREAMS
+              value: {{ .Values.allowPrivateUpstreams | quote }}
+            - name: TOOL_LIST_TIMEOUT_MS
+              value: {{ .Values.timeouts.listMs | quote }}
+            - name: TOOL_CALL_TIMEOUT_MS
+              value: {{ .Values.timeouts.callMs | quote }}
+            - name: TOOL_CACHE_TTL_MS
+              value: {{ .Values.timeouts.cacheTtlMs | quote }}
+            - name: SEED_UPSTREAMS
+              value: {{ $seeds | toJson | quote }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL

@@ -1,0 +1,22 @@
+Urumi platform is installed.
+
+Storefront:  http://{{ .Values.global.domain.store }}
+Dashboard:   http://{{ .Values.global.domain.app }}
+Gateway MCP: http://{{ .Values.global.domain.app }}/mcp
+
+Admin login:
+  email: {{ .Values.secrets.admin.email }}
+  password:
+    kubectl -n {{ .Values.global.platformNamespace }} get secret gateway-secrets \
+      -o jsonpath='{.data.ADMIN_PASSWORD}' | base64 -d
+
+WooCommerce admin password:
+  kubectl -n {{ .Values.global.storeNamespace }} get secret store-credentials \
+    -o jsonpath='{.data.WP_ADMIN_PASSWORD}' | base64 -d
+
+Next steps:
+  1. Wait for the woocommerce-bootstrap Job to complete:
+       kubectl -n {{ .Values.global.storeNamespace }} get jobs -w
+  2. Open the storefront and place a Cash-on-Delivery order.
+  3. Open the dashboard, sign in, inspect Servers and the Chat agent.
+  4. Create a member, issue an API key, and connect an MCP client to /mcp.
